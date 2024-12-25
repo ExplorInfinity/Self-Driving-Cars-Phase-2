@@ -26,6 +26,7 @@ class Handler {
 
         window.addEventListener('resize', () => {
             canvas.width = canvas.height = window.innerHeight - 165;
+            this.pauseDrawn = false;
         })
 
         this.#addEventListeners();
@@ -139,8 +140,8 @@ class Handler {
         this.markingEditor.enableListeners();
         this.graphEditor.disableListeners();
         this.selectionMenu.style.display = 'block';
-        if(this.oldHash !== Hash(this.graph)) {
-            this.oldHash = Hash(this.graph);
+        if( this.oldHash2 !== Hash(this.graph)) {
+            this.oldHash2 = Hash(this.graph);
             this.markingEditor.generate();
         }
     }
