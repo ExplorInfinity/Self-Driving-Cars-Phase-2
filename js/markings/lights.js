@@ -37,6 +37,7 @@ export class TrafficLights extends Marking {
         }
         
         this.activeLightNumber = 0;
+        this.lightDirection = 1;
         this.time = 0;
         this.timeInterval = 1000;
     }
@@ -62,9 +63,9 @@ export class TrafficLights extends Marking {
 
         if(this.time >= this.timeInterval) {
             this.time = 0;
-            this.activeLightNumber++;
-            if(this.activeLightNumber > this.lights.length-1) 
-                this.activeLightNumber = 0;
+            if(this.activeLightNumber >= this.lights.length-1) 
+                this.lightDirection *= -1;
+            this.activeLightNumber += this.lightDirection;
         }
     }
 

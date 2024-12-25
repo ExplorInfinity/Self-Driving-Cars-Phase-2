@@ -120,8 +120,9 @@ export class MarkingEditor {
                 worker.terminate();
             }
 
-            worker.postMessage(this.world);
-        });
+            const { graph, roadWidth, roadRoundness } = this.world;
+            worker.postMessage({ graph, roadWidth, roadRoundness });
+        });        
                 
         if(laneGuides.length > 0) 
             this.laneGuides = laneGuides.map(lane => Segment.loadSegment(lane));
