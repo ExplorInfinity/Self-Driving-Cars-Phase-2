@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Driving Cars Phase-2</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="loadingScreen" style="display: none;">
+        <label id="loadingLabel" for="progressBar">
+            <p id="comment"></p>
+            <p id="progressCount"></p>
+        </label>
+        <progress id="progressBar" max="100" value="10"></progress>
+        <progress id="randomBar"></progress>
+    </div>
+    
+    <div id="container">
+        <div id="markingSelection">
+            <div class="tooltip">
+                <div class="tooltipText">Start</div>
+                <button id="startSign" class="toolBtn">🚩</button>
+            </div>
+            <div class="tooltip">
+                <div class="tooltipText">Stop</div>
+                <button id="stopSign" class="toolBtn">🛑</button>
+            </div>
+            <div class="tooltip">
+                <div class="tooltipText">Crossing</div>
+                <button id="crossingSign" class="toolBtn">🚸</button>
+            </div>
+            <div class="tooltip">
+                <div class="tooltipText">Parking</div>
+                <button id="parkingSign" class="toolBtn">🅿️</button>
+            </div>
+            <div class="tooltip">
+                <div class="tooltipText">Yield</div>
+                <button id="yieldSign" class="toolBtn">⚠️</button>
+            </div>
+            <div class="tooltip">
+                <div class="tooltipText">Target</div>
+                <button id="targetSign" class="toolBtn">🎯</button>
+            </div>
+            <div class="tooltip">
+                <div class="tooltipText">Lights</div>
+                <button id="trafficLights" class="toolBtn">🚥</button>
+            </div>
+        </div>
+        <!-- <h1>World Editor</h1> -->
+        <canvas id="canvas"></canvas>
+    </div>
+    <div id="controls">
+        <div id="panelLabel">
+            🛠️
+        </div>
+        <div class="tooltip">
+            <div class="tooltipText">Save</div>
+            <button id="save" class="toolBtn">💾</button>
+        </div>
+        <div class="tooltip" style="display: none;">
+            <div class="tooltipText">Save Local</div>
+            <button id="saveLocal" class="toolBtn">📋</button>
+        </div>
+        <div class="tooltip" style="display: none;">
+            <div class="tooltipText">Save as File</div>
+            <button id="saveFile" class="toolBtn">🖥️</button>
+        </div>
+        <div class="tooltip">
+            <div class="tooltipText">Restore</div>
+            <button id="restore" class="toolBtn">💽</button>
+        </div>
+        <div class="tooltip" style="display: none;">
+            <div class="tooltipText">Restore Local World</div>
+            <button id="restoreLocal" class="toolBtn">📋</button>
+        </div>
+        <div class="tooltip">
+            <div class="tooltipText">Load World From File</div>
+            <label for="fileInput" style="display: none;">
+                📁
+                <input name="fileInput" type="file" accept=".world" id="fileInput">
+            </label>
+        </div>
+        <div class="tooltip">
+            <div class="tooltipText">Load OSM Data</div>
+            <button id="openOSM" class="toolBtn">🌏</button>
+        </div>
+        <div class="tooltip">
+            <div class="tooltipText">Saved Maps</div>
+            <button id="show" class="toolBtn">🗺️</button>
+        </div>
+        <div class="tooltip">
+            <div class="tooltipText">Dispose</div>
+            <button id="dispose" class="toolBtn">🗑️</button>
+        </div>
+        <div class="tooltip">
+            <div class="tooltipText">Clear</div>
+            <button id="clear" class="toolBtn">🧹</button>
+        </div>
+        <div class="tooltip" style="display: none;">
+            <div class="tooltipText">Clear All</div>
+            <button id="clearAll" class="toolBtn">🧽</button>
+        </div>
+        <div class="tooltip" style="display: none;">
+            <div class="tooltipText">Clear Roads</div>
+            <button id="clearRoads" class="toolBtn">🛣️</button>
+        </div>
+        <div class="tooltip" style="display: none;">
+            <div class="tooltipText">Clear Buildings and Trees</div>
+            <button id="clearBuildings" class="toolBtn">🏠</button>
+        </div>
+        <div class="tooltip" style="display: none;">
+            <div class="tooltipText">Clear Trees</div>
+            <button id="clearTrees" class="toolBtn">🌲</button>
+        </div>
+        <div class="tooltip" style="display: none;">
+            <div class="tooltipText">Generate Roads</div>
+            <button id="genRoads" class="toolBtn">🛣️</button>
+        </div>
+        <div class="tooltip" style="display: none;">
+            <div class="tooltipText">Generate Buildings</div>
+            <button id="genBuildings" class="toolBtn">🏠</button>
+        </div>
+        <div class="tooltip" style="display: none;">
+            <div class="tooltipText">Generate Trees</div>
+            <button id="genTrees" class="toolBtn">🌲</button>
+        </div>
+
+        &nbsp;&nbsp;&nbsp;&nbsp;
+
+        <button id="back" style="display: none;">X</button>
+        <div class="tooltip">
+            <div id="modeTip" class="tooltipText">Graph Mode</div>
+            <button id="mode" mode="graph" class="toolBtn">🌐</button>
+        </div>
+        <div class="tooltip">
+            <div class="tooltipText">World Generation</div>
+            <button id="generate" mode="graph" class="toolBtn">⚙️</button>
+        </div>
+        <div id="zoom"></div>
+    </div>
+
+    <div id="osmPanel" style="display: none;">
+        <textarea 
+            name="osmData" 
+            id="osmData" 
+            cols="50" rows="10"
+            placeholder="Place your OpenStreetMap data"></textarea>
+        <div id="osmControls">
+            <div class="tooltip">
+                <div class="tooltipText">Load</div>
+                <button id="osmLoad" class="toolBtn">✔️</button>
+            </div>
+            <div class="tooltip">
+                <div class="tooltipText">Go Back</div>
+                <button id="osmBack" class="toolBtn">❌</button>
+            </div>
+        </div>
+    </div>
+    <!-- <div id="controls">
+        <button id="addRandomPoint">Add Point</button>
+        <button id="addRandomSegment">Add Segment</button>
+        <button id="removePoint">Remove Point</button>
+        <button id="removeSegment">Remove Segment</button>
+        <button id="save">Save 💾</button>
+        <button id="restore">Restore 💽</button>
+        <button id="show">Saved Maps 🗺️</button>
+        <button id="dispose">Dispose Map🗑️</button>
+        <button id="clear">Clear🧹</button>
+        <button id="mode" mode="graph">Graph Mode 🌐</button>
+    </div> -->
+
+
+    <script type="module" src="js/options.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>

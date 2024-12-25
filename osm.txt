@@ -1,0 +1,24 @@
+[out:json];
+(
+  way['highway']
+  ['highway' !~'pedestrian']
+  ['highway' !~'footway']
+  ['highway' !~'cycleway']
+  ['highway' !~'service']
+  ['highway' !~'path']
+  ['highway' !~'corridor']
+  ['highway' !~'track']
+  ['highway' !~'steps']
+  ['highway' !~'raceway']
+  ['highway' !~'bridleway']
+  ['highway' !~'proposed']
+  ['highway' !~'construction']
+  ['highway' !~'elevator']
+  ['highway' !~'bus-guideway']
+  ['access' !~ 'private']
+  ['access' !~ 'no']
+  ({{bbox}});
+);
+out body;
+>;
+out skel;
