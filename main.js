@@ -23,7 +23,7 @@ class Handler {
     constructor(canvas, context) {
         this.canvas = canvas;
         this.context = context;
-        this.selectionMenu = document.getElementById('markingSelection');
+        this.selectionMenu = document.getElementById('markingPanel');
         this.pauseDrawn = false;
         this.lastTime = 0;
 

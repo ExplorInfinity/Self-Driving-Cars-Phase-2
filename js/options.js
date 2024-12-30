@@ -86,7 +86,7 @@ export function checkData(handler) {
     closeOsmPanel();
 }
 
-function parentNodes(btns) {
+function parentNodes(btns) {    
     return btns.map(btn => btn.parentNode);
 }
 

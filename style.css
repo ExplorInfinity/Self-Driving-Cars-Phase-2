@@ -27,7 +27,7 @@ h1 {
     position: relative;
 }
 
-#markingSelection {
+#markingPanel {
     display: none;
     position: absolute;
     left: 0;
@@ -71,11 +71,11 @@ h1 {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.tooltip {
+.tooltipContainer {
     position: relative;
 }
 
-.tooltip:hover .tooltipText {
+.tooltipContainer:hover .tooltipText {
     display: block;
 }
 
@@ -89,6 +89,11 @@ h1 {
     border: 2px solid hsl(0, 0%, 20%);
     border-radius: 3px;
     padding: 5px 10px;
+}
+
+.btn-panel {
+    display: flex;
+    flex-direction: row;
 }
 
 #controls .tooltipText {

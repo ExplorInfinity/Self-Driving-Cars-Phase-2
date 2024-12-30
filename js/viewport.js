@@ -9,7 +9,7 @@ export class Viewport {
 
         this.zoom = 1;
         this.minZoom = 0.5;
-        this.maxZoom = 20;
+        this.maxZoom = 10;
         this.step = 0.15;
 
         this.center = new Point(this.canvas.width*0.5, this.canvas.height*0.5);

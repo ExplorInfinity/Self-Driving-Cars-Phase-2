@@ -98,6 +98,7 @@ export class MarkingEditor {
 
     async generate() {
         this.laneGuides.length = 0;
+        if(this.world.graph.segments.length <= 0) return
         
         const laneGuides = await new Promise((resolve, reject) => {
             const worker = new Worker('./js/workers/markingEditor.js', {type: 'module'});
