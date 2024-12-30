@@ -1,5 +1,6 @@
-import { add, invLerp, scale, subtract } from "./math/utils.js";
+import { add, angleOfVector, invLerp, scale, subtract, translateVector } from "./math/utils.js";
 import { Point } from "./primitives/point.js";
+import { Segment } from "./primitives/segment.js";
 
 export class Viewport {
     constructor(context) {
@@ -8,10 +9,11 @@ export class Viewport {
 
         this.zoom = 1;
         this.minZoom = 0.5;
-        this.maxZoom = 5;
+        this.maxZoom = 20;
         this.step = 0.15;
 
         this.center = new Point(this.canvas.width*0.5, this.canvas.height*0.5);
+        this.mouse = new Point(0, 0);
 
         this.offset = scale(this.center, -1);
         this.drag = {
@@ -20,6 +22,7 @@ export class Viewport {
             end: new Point(0, 0),
             offset: new Point(0, 0)
         }
+        this.dragScale = 1;
 
         this.keys = [];
         this.#addEventListeners();
@@ -57,7 +60,7 @@ export class Viewport {
         if(!this.keys.includes('Control')) return
 
         const direction = Math.sign(e.deltaY);
-        const value = this.zoom+direction*this.step;
+        const value = this.zoom+direction*this.step*(this.keys.includes('Shift') ? 5 : 1);
         this.zoom = Math.max(this.minZoom, Math.min(value, this.maxZoom));
     }
 
@@ -81,30 +84,55 @@ export class Viewport {
         const keyPressed = e.key;
         if(keyPressed === 'Control' && !this.keys.includes(keyPressed)) 
             this.keys.push(keyPressed);
+        if(keyPressed === 'Shift' && !this.keys.includes(keyPressed)) 
+            this.keys.push(keyPressed);
+        if(keyPressed === 'Shift') {
+            if(this.drag.active) {
+                this.endDrag(this.mouse);
+                this.startDrag(this.mouse);
+            }
+            this.dragScale = this.zoom;
+        }
     }
 
     #handleKeyUp(e) {
         const keyReleased = e.key;
         if(keyReleased === 'Control' && this.keys.includes(keyReleased)) 
-            this.keys.splice(this.keys.indexOf(keyReleased), 1);        
+            this.keys.splice(this.keys.indexOf(keyReleased), 1);
+        if(keyReleased === 'Shift' && this.keys.includes(keyReleased)) 
+            this.keys.splice(this.keys.indexOf(keyReleased), 1);
+        
+        if(keyReleased === 'Shift') {
+            if(this.drag.active) {
+                this.endDrag(this.mouse);
+                this.startDrag(this.mouse);
+            }
+            this.dragScale = 1;
+        }        
     }
 
     startDrag(e) {
         const {x, y} = {x: e.x, y: e.y};
+        this.mouse.x = x;
+        this.mouse.y = y;
         this.drag.active = true;
         this.drag.start = new Point(x, y);
     }
 
     handleDrag(e) {
         const {x, y} = {x: e.x, y: e.y};
+        this.mouse.x = x;
+        this.mouse.y = y;
         this.drag.end = new Point(x, y);
-        this.drag.offset = subtract(this.drag.end, this.drag.start);
+        this.drag.offset = scale(subtract(this.drag.end, this.drag.start), this.dragScale);
     }
 
     endDrag(e) {
         const {x, y} = {x: e.x, y: e.y};
+        this.mouse.x = x;
+        this.mouse.y = y;
         this.drag.end = new Point(x, y);
-        this.drag.offset = subtract(this.drag.end, this.drag.start);
+        this.drag.offset = scale(subtract(this.drag.end, this.drag.start), this.dragScale);
         this.offset = add(this.offset, this.drag.offset);            
 
         this.drag = {

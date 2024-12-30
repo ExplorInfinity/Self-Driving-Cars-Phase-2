@@ -10,6 +10,9 @@ import { OSM } from "./js/osm.js";
 import { checkData } from "./js/options.js";
 import { Tree } from "./js/objects/tree.js";
 import { LoadingScreen } from "./js/loading.js";
+import { getShortestPath } from "./js/shortestPath.js";
+import { Segment } from "./js/primitives/segment.js";
+import { Envelope } from "./js/primitives/envelope.js";
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -61,19 +64,26 @@ class Handler {
         document.getElementById('genRoads').addEventListener('click', () => this.world.generate());
         document.getElementById('genBuildings').addEventListener('click', () => this.generateBuildings());
         document.getElementById('genTrees').addEventListener('click', () => this.generateTrees());   
+
+        document.addEventListener('keydown', e => {
+            const keyPressed = e.key;
+            const hovered = this.graphEditor.hovered;
+            if(keyPressed === 's' && hovered) this.start = hovered;
+            else if(keyPressed === 'e' && hovered) this.end = hovered;
+            if(this.start && this.end && this.oldHash3 !== Hash({start: this.start, end: this.end})) {
+                this.world.generateCorridors(this.start, this.end);
+                this.oldHash3 = Hash({start: this.start, end: this.end});
+            }
+        })
     }
 
     generateBuildings() {
-        LoadingScreen.show();
-        LoadingScreen.setComment('Initiating...');
-        LoadingScreen.hideBars();
+        LoadingScreen.showInit();
         requestIdleCallback(() => this.world.generateBuildings(), {timeout: 1000});
     }
     
     generateTrees() {
-        LoadingScreen.show();
-        LoadingScreen.setComment('Initiating...');
-        LoadingScreen.hideBars();
+        LoadingScreen.showInit();
         requestIdleCallback(() => this.world.generateTrees(), {timeout: 1000});
     }
 
@@ -202,6 +212,16 @@ class Handler {
         this.context.restore();
     }
 
+    findPath() {
+        if(this.start && this.end) {
+            this.path = getShortestPath(
+                this.start, 
+                this.end,
+                this.graph
+            );
+        }
+    }
+
     animate(timestamp) {
         const deltaTime = timestamp - this.lastTime;
         this.lastTime = timestamp;
@@ -228,7 +248,6 @@ class Handler {
         requestAnimationFrame(time => this.animate(time));
     }
 }
-
 
 const handler = new Handler(canvas, ctx);
 

@@ -57,4 +57,10 @@ export class LoadingScreen {
         randomBar.style.display = 'none';
         progressBar.style.display = 'none';
     }
+
+    static showInit() {
+        LoadingScreen.show();
+        LoadingScreen.setComment('Initiating...');
+        LoadingScreen.hideBars();
+    }
 }

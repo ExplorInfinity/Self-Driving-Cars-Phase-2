@@ -18,7 +18,7 @@ onmessage = e => {
 
     const trees = [];
     let trycount = 0;
-    while(trycount < 50 && trees.length <= maxTreeCount) {
+    while(trycount < 40 && trees.length <= maxTreeCount) {
         const treePoint = new Point(
             lerp(left, right, Math.random()),
             lerp(top, bottom, Math.random()),

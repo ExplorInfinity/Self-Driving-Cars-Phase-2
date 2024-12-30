@@ -102,6 +102,9 @@ export class MarkingEditor {
         const laneGuides = await new Promise((resolve, reject) => {
             const worker = new Worker('./js/workers/markingEditor.js', {type: 'module'});
 
+            LoadingScreen.show();
+            LoadingScreen.showRandomBar();
+            LoadingScreen.setComment('Initiating...');
             worker.onmessage = e => {
                 const data = e.data;
                 if(data.result) {
@@ -109,15 +112,14 @@ export class MarkingEditor {
                     worker.terminate();
                     resolve(data.result);
                 } else if(data.comment) {
-                    LoadingScreen.show();
-                    LoadingScreen.showRandomBar();
                     LoadingScreen.setComment(data.comment);
                 }
             }
 
             worker.onerror = e => {
-                console.error(e);
+                LoadingScreen.hide();
                 worker.terminate();
+                reject(e);
             }
 
             const { graph, roadWidth, roadRoundness } = this.world;

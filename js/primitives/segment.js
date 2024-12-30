@@ -13,15 +13,9 @@ export class Segment {
     }
 
     static loadSegFromPoints(segInfo, points) {
-        const p1 = points.find(point => {
-            const segPoint = segInfo.p1;
-            return point.x === segPoint.x && point.y === segPoint.y
-        })
-        const p2 = points.find(point => {
-            const segPoint = segInfo.p2;
-            return point.x === segPoint.x && point.y === segPoint.y
-        })
-        return new Segment(p1, p2)
+        const p1 = points.find(point => point.isSame(segInfo.p1))
+        const p2 = points.find(point => point.isSame(segInfo.p2))
+        return new Segment(p1, p2, {oneway: segInfo.oneway})
     }
 
     static breakSegment(segment, breakPoint) {
@@ -53,7 +47,10 @@ export class Segment {
             if(dash !== true) context.setLineDash(dash);
             else context.setLineDash([7, 5])
         }
-        if(this.oneway) context.setLineDash([4, 4]);
+        if(this.oneway) {
+            context.setLineDash([10, 10]);
+            context.lineWidth = lineWidth*0.5;
+        }
         context.beginPath();
         context.moveTo(this.p1.x, this.p1.y);
         context.lineTo(this.p2.x, this.p2.y);
@@ -101,5 +98,9 @@ export class Segment {
         }
         
         return projection
+    }
+
+    includesPoint(point) {
+        return this.p1.isSame(point) || this.p2.isSame(point)
     }
 }

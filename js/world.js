@@ -15,6 +15,7 @@ import { Envelope } from "./primitives/envelope.js";
 import { Point } from "./primitives/point.js";
 import { Polygon } from "./primitives/polygon.js";
 import { Segment } from "./primitives/segment.js";
+import { getShortestPath } from "./shortestPath.js";
 
 export class World {
     constructor(
@@ -100,33 +101,45 @@ export class World {
     }
 
     async generate() {
-        const { roads, roadBorders } = await new Promise((resolve, reject) => {
+        if(this.graph.segments.length < this.autoGenLimit) {
+            this.roads = [];
+            for(const segment of this.graph.segments) {
+                this.roads.push(
+                    new Envelope(segment, this.roadWidth, this.roadRoundness))
+            }            
+            
+            this.roadBorders = Polygon.polygonUnion(
+                this.roads.map(envelope => envelope.polygon))??[];
+        } else {
             const worker = new Worker('./js/workers/genRoads.js', {type: 'module'});
-
-            worker.onmessage = e => {
-                const data = e.data;
-                if(data.result) {
-                    LoadingScreen.hide();
-                    worker.terminate();
-                    resolve(data.result);
-                } else if(data.comment) {
-                    LoadingScreen.show();
-                    LoadingScreen.showRandomBar();
-                    LoadingScreen.setComment(data.comment);
+            const { roads, roadBorders } = await new Promise((resolve, reject) => {
+                worker.onmessage = e => {
+                    const data = e.data;
+                    if(data.result) {
+                        LoadingScreen.hide();
+                        worker.terminate();
+                        resolve(data.result);
+                    } else if(data.comment) {
+                        LoadingScreen.show();
+                        LoadingScreen.showRandomBar();
+                        LoadingScreen.setComment(data.comment);
+                    }
                 }
-            }
 
-            worker.onerror = e => {
-                console.error(e);
-                worker.terminate();
-            }
+                worker.onerror = e => {
+                    console.error(e);
+                    worker.terminate();
+                    reject();
+                }
 
-            const { roadWidth, roadRoundness, graph, autoGenLimit } = this;
-            worker.postMessage({ roadWidth, roadRoundness, graph, autoGenLimit });
-        });        
+                const { roadWidth, roadRoundness, graph, autoGenLimit } = this;
+                worker.postMessage({ roadWidth, roadRoundness, graph, autoGenLimit });
+            });
 
-        this.roads = roads ? roads.map(roadInfo => Envelope.loadEnvelope(roadInfo)) : [];
-        this.roadBorders = roadBorders ? roadBorders.map(segInfo => Segment.loadSegment(segInfo)) : [];
+            this.roads = roads ? roads.map(roadInfo => Envelope.loadEnvelope(roadInfo)) : [];
+            this.roadBorders = roadBorders ? roadBorders.map(segInfo => Segment.loadSegment(segInfo)) : [];
+        }
+
         if(this.graph.segments.length <= 100) {
             this.buildings = [];
             this.trees = [];
@@ -154,6 +167,12 @@ export class World {
             segment.draw(context, {color: 'white', dash: [10, 10], lineWidth: this.roadWidth*0.05});
         }
         this.roadMarkings.forEach(marking => marking.draw(context));
+
+        if(this.corridor) {
+            for(let item of this.corridor) {
+                item.draw(context);
+            }
+        }
         
         const items = [...this.buildings??[], ...this.trees]
         .filter(item => item.base.minDistFromPoint(viewPoint) <= renderDistance)
@@ -162,5 +181,35 @@ export class World {
                 b.base.minDistFromPoint(viewPoint) -
                 a.base.minDistFromPoint(viewPoint)
         ).forEach(item => item.draw(context, viewPoint));
+    }
+
+    async generateCorridors(start, end) {
+        // console.time('Corridor');
+        const worker = new Worker(`${location.origin}/js/workers/genCorridors.js`, {type: 'module'});
+        
+        this.corridor = await new Promise((resolve, reject) => {
+            worker.onmessage = e => {
+                const data = e.data;
+                
+                if(data.result) {
+                    worker.terminate();
+                    const result = 
+                        data.result.map(segInfo => Segment.loadSegment(segInfo));
+                    resolve(result);
+                }
+            }
+
+            worker.onerror = e => {
+                worker.terminate();
+                console.error(e);
+                reject();
+            }
+
+            worker.postMessage({
+                start, end, graph: this.graph, 
+                roadWidth: this.roadWidth, 
+                roadRoundness: this.roadRoundness})
+        })
+        // console.timeEnd('Corridor');
     }
 }

@@ -54,6 +54,8 @@ export class Tree {
 
     // Spawn range is relative to treeSize [min, max]
     static async generateTrees(world, spawnRange=[0.7, 3]) {
+        console.time('time: ');
+        
         const {roadBorders, buildings, roads, treeSize} = world;
         const points = [
             ...roadBorders.map(seg => [seg.p1, seg.p2]).flat(),
@@ -71,7 +73,7 @@ export class Tree {
         const mapHeight = mapBottom - mapTop;
         const mapWidth = mapRight - mapLeft;
         
-        const numberOfWorkers = 16;
+        const numberOfWorkers = (navigator.hardwareConcurrency || 4) - 2;
         const workers = [];
         const workerPromises = [];
         
@@ -137,6 +139,7 @@ export class Tree {
                 })
                 .catch(err => console.error(err))
                 .finally(() => workers.forEach(worker => worker.terminate()));
+        console.timeEnd('time: ');
         return trees
 
         // return new Promise((resolve, reject) => {
@@ -161,7 +164,7 @@ export class Tree {
         //         console.error(e);
         //         worker.terminate();
         //     }
-    
+        
         //     const {roadBorders, buildings, roads, treeSize} = world;
         //     worker.postMessage({roadBorders, buildings, roads, treeSize, spawnRange});
         // })

@@ -110,9 +110,9 @@ export function getIntersectionPoint(line1, line2) {
     let u = uTop / bottom;
     if(t >= 0 && t <= 1 && u >= 0 && u <= 1) {
         return {
-                x: lerp(x1, x2, t),
-                y: lerp(y1, y2, t),
-                offset: t
+            x: lerp(x1, x2, t),
+            y: lerp(y1, y2, t),
+            offset: t
         }
     }
 }
@@ -144,4 +144,42 @@ export function degToRad(angle) {
 
 export function crossProduct2D(A, B) {
     return (A.x * B.y) - (A.y * B.x);
+}
+
+export function createWorkerChunk(index, workerCount, array) {
+    const startIndex = Math.ceil(lerp(0, array.length, index / workerCount))
+    const endIndex = Math.ceil(lerp(0, array.length, (index+1) / workerCount))
+    return {startIndex, endIndex: endIndex <= array.length-1 ? endIndex : array.length-1};
+}
+
+export function intersectionPossible(polygonA, polygonB) {
+    const A = getBoundaryByPoints(polygonA.points);
+    const B = getBoundaryByPoints(polygonB.points);
+
+    const verticalOverlap = (
+        (A.top <= B.top && B.top <= A.bottom) || 
+        (A.top <= B.bottom && B.bottom <= A.bottom) || 
+        (B.top <= A.top && A.top <= B.bottom) || 
+        (B.top <= A.bottom && A.bottom <= B.bottom)
+    );
+
+    const horizontalOverlap = (
+        (A.left <= B.left && B.left <= A.right) || 
+        (A.left <= B.right && B.right <= A.right) || 
+        (B.left <= A.left && A.left <= B.right) || 
+        (B.left <= A.right && A.right <= B.right)
+    );
+
+    if(verticalOverlap && horizontalOverlap) return true
+
+    return false
+}
+
+export function getBoundaryByPoints(points) {
+    const left = Math.min(...points.map(p => p.x));
+    const right = Math.max(...points.map(p => p.x));
+    const top = Math.min(...points.map(p => p.y));
+    const bottom = Math.max(...points.map(p => p.y));
+
+    return { top, right, left, bottom }
 }

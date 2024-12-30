@@ -1,4 +1,4 @@
-import { average, getIntersectionPoint, getRandomColor, subtract, crossProduct2D } from "../math/utils.js";
+import { average, getIntersectionPoint, getRandomColor, subtract, crossProduct2D, createWorkerChunk, intersectionPossible } from "../math/utils.js";
 import { Point } from "./point.js";
 import { Segment } from "./segment.js";
 
@@ -25,6 +25,13 @@ export class Polygon {
         this.segments = segsInfo.map(Segment.loadSegment(segsInfo));
     }
 
+    intersectionPossiblePolys(polygons) {
+        return polygons.filter(poly => 
+            intersectionPossible(this, poly) && 
+            this !== poly
+        );
+    }
+
     static loadPolygon(polyInfo) { 
         const points = polyInfo.points.map(pointInfo => Point.loadPoint(pointInfo));
         const segments = polyInfo.segments.map(segInfo => 
@@ -35,18 +42,23 @@ export class Polygon {
 
     static polygonUnion(polygons) {
 
-        Polygon.multiBreak(polygons);
+        const checkPolys = polygons.map(poly => poly.intersectionPossiblePolys(polygons));
+
+        if(polygons.length <= 0) return
+        // console.time('breaking');
+        Polygon.multiBreak(polygons, checkPolys);
+        // console.timeEnd('breaking');
+
         const unionSegments = [];
 
+        // console.time('Filtering');
         for(let i = 0; i < polygons.length; i++) {
-            for(const seg of polygons[i].segments) {                
+            for(const seg of polygons[i].segments) {                                
                 const point = average(seg.p1, seg.p2);
                 
                 let keep = true;
-                for(let j = 0; j < polygons.length; j++) {
-                    if(i === j) continue
-
-                    if(polygons[j].isPointInsidePoly(point)){
+                for(let j = 0; j < checkPolys[i].length; j++) {
+                    if(checkPolys[i][j].isPointInsidePoly(point)){
                         keep = false;
                         break
                     }
@@ -55,18 +67,21 @@ export class Polygon {
                 if(keep) {
                     unionSegments.push(seg);
                 }
-            }
+            }            
         }
+        // console.timeEnd('Filtering');
 
         return unionSegments
     }
 
-    static multiBreak(polygons) {
-        for(let i = 0; i < polygons.length; i++) {
+    static multiBreak(polygons, checkPolys) {
+        for(let i = 0; i < polygons.length-1; i++) {
             for(let j = i+1; j < polygons.length; j++) {
-                Polygon.break(polygons[i], polygons[j])
+                if(checkPolys[i].find(poly => poly === polygons[j])) {
+                    Polygon.break(polygons[i], polygons[j]);
+                }
             }
-        }
+        }        
     }
 
     static break(poly1, poly2) {
@@ -88,7 +103,7 @@ export class Polygon {
                 ){
                     const intPoint = new Point(intersection.x, intersection.y);
                     // intersections.push(intPoint);
-
+                    
                     const segment1 = Segment.breakSegment(segs1[i], intPoint);
                     segs1.splice(i+1, 0, segment1);
                     

@@ -13,8 +13,10 @@ onmessage = e => {
             new Envelope(segment, roadWidth, roadRoundness))
     }
 
+    // console.time('Union');
     const roadBorders = Polygon.polygonUnion(
         roads.map(envelope => envelope.polygon));
+    // console.timeEnd('Union');
 
     postMessage({ result: { roads, roadBorders } });
 }

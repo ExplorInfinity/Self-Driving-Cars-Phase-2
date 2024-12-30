@@ -9,8 +9,7 @@ export class Point {
     }
 
     isSame(point) {
-        if(this.x === point.x && this.y === point.y) return true
-        return false
+        return (this.x === point.x) && (this.y === point.y)
     }
 
     draw(context, {size=18, color='black', outline=false, hovered=false} = {}) {

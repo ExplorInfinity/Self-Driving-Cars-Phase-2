@@ -53,6 +53,11 @@ export class GraphEditor {
                this.graph.removePoint(this.hovered);
                this.hovered = null;
             }
+            this.dragable = false;
+            if(this.moved) {
+                this.moved = false;
+                this.selected = null;
+            }
             return
         }
 
