@@ -43,7 +43,8 @@ export class Polygon {
     }
 
     static polygonUnion(polygons) {
-        if(polygons.length <= 1) return
+        if(polygons.length <= 0) return []
+        else if(polygons.length <= 1) return polygons[0].segments
 
         // console.time('Polygon Filtering');
         const checkPolys = [];
