@@ -18,7 +18,7 @@ export function getNearestSegment(loc, segments, threshold = 10) {
     let minDist = Number.MAX_SAFE_INTEGER;
     let nearest = null;
     for(const seg of segments) {
-        let dist = seg.minDistFromPoint(loc);
+        let dist = seg.minDistFromPoint(loc);        
         if(dist < minDist && dist < threshold) {
             minDist = dist;
             nearest = seg;

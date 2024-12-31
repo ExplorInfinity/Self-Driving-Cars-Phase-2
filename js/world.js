@@ -187,7 +187,7 @@ export class World {
     }
 
     async generateCorridors(start, end) {        
-        // console.time('Corridor');
+        console.time('Corridor');
         const worker = new Worker(`${location.origin}/js/workers/genCorridors.js`, {type: 'module'});
         
         this.corridor = await new Promise((resolve, reject) => {
@@ -216,6 +216,6 @@ export class World {
                 roadWidth: this.roadWidth, 
                 roadRoundness: this.roadRoundness})
         })
-        // console.timeEnd('Corridor');
+        console.timeEnd('Corridor');
     }
 }

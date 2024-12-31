@@ -34,8 +34,8 @@ export class Viewport {
 
     getMouseCoords(e, subtractDragOffset=false) {
         const offset = this.getOffset();
-        const x = (e.offsetX - this.center.x) * this.zoom - this.offset.x - (subtractDragOffset ? this.drag.offset.x : 0);
-        const y = (e.offsetY - this.center.y) * this.zoom - this.offset.y - (subtractDragOffset ? this.drag.offset.y : 0);
+        const x = (e.offsetX - this.center.x) * this.zoom - (subtractDragOffset ? offset.x : this.offset.x);
+        const y = (e.offsetY - this.center.y) * this.zoom - (subtractDragOffset ? offset.y : this.offset.y);
 
         return {x, y}
     }
@@ -70,8 +70,9 @@ export class Viewport {
     }
     
     #handleMouseMove(e) {
-        this.mouse.x = e.x;
-        this.mouse.y = e.y;
+        const {x, y} = this.getMouseCoords(e);
+        this.mouse.x = x;
+        this.mouse.y = y;
         if( this.keys.includes('Control') && 
             this.drag.active) this.handleDrag(e);
         else if(this.drag.active) this.endDrag(e); 

@@ -11,7 +11,7 @@ onmessage = e => {
     const { graph } = Graph.covertInfoToGraph(e.data.graph);
     
     const startSeg = getNearestSegment(start, graph.segments, roadWidth*2);
-    const endSeg = getNearestSegment(end, graph.segments, roadWidth*2);
+    const endSeg = getNearestSegment(end, graph.segments, roadWidth*2);    
     
     if(!startSeg || !endSeg) {
         postMessage({abort: true});

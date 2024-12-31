@@ -1,11 +1,9 @@
 import { Point } from "./primitives/point.js";
 import { Segment } from "./primitives/segment.js";
 
-export function getShortestPath(startPoint, endPoint, segments, timeout=2000) {
+export function getShortestPath(startPoint, endPoint, segments,{timeout=2000}={}) {
     if(startPoint === endPoint) return [startPoint];
-    const time = Date.now();
     const points = segments.map(seg => [seg.p1, seg.p2]).flat();
-    
     addKeys(points);
     
     const shortestPath = [];
@@ -14,11 +12,6 @@ export function getShortestPath(startPoint, endPoint, segments, timeout=2000) {
     let currentPoint = startPoint;
     
     while (!endPoint.visited) {          
-        if(Date.now() - time > timeout) {
-            console.error('Path finding failed!');
-            break
-        }
-
         const segsConnected = getNextSegsWithPoint(currentPoint, segments);
         
         const nextPoints = [];
@@ -49,10 +42,6 @@ export function getShortestPath(startPoint, endPoint, segments, timeout=2000) {
     }
 
     while (currentPoint.prev) {
-        if(Date.now() - time > timeout) {
-            console.error('Backtracking Path failed!');
-            break
-        }
         shortestPath.unshift(currentPoint);
         currentPoint = currentPoint.prev;
     }
