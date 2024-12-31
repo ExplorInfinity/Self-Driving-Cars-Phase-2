@@ -63,17 +63,20 @@ class Handler {
         osmLoad.addEventListener('click', () => checkData(this));
         document.getElementById('genRoads').addEventListener('click', () => this.world.generate());
         document.getElementById('genBuildings').addEventListener('click', () => this.generateBuildings());
-        document.getElementById('genTrees').addEventListener('click', () => this.generateTrees());   
-
-        document.addEventListener('keydown', e => {
+        document.getElementById('genTrees').addEventListener('click', () => this.generateTrees());
+        window.addEventListener('keydown', e => {
+            if(this.keyPressed) return
+            this.keyPressed = true;
             const keyPressed = e.key;
-            const hovered = this.graphEditor.hovered;
-            if(keyPressed === 's' && hovered) this.start = hovered;
-            else if(keyPressed === 'e' && hovered) this.end = hovered;
-            if(this.start && this.end && this.oldHash3 !== Hash({start: this.start, end: this.end})) {
-                this.world.generateCorridors(this.start, this.end);
-                this.oldHash3 = Hash({start: this.start, end: this.end});
-            }
+            if(keyPressed === 's') this.start = Point.loadPoint(this.viewport.mouse);
+            if(keyPressed === 'e') this.end = Point.loadPoint(this.viewport.mouse);            
+
+            if(this.start && this.end) this.world.generateCorridors(this.start, this.end);
+        })
+        window.addEventListener('keyup', e => {
+            setTimeout(() => {
+                this.keyPressed = false;
+            }, 300);
         })
     }
 
@@ -212,16 +215,6 @@ class Handler {
         this.context.restore();
     }
 
-    findPath() {
-        if(this.start && this.end) {
-            this.path = getShortestPath(
-                this.start, 
-                this.end,
-                this.graph
-            );
-        }
-    }
-
     animate(timestamp) {
         const deltaTime = timestamp - this.lastTime;
         this.lastTime = timestamp;
@@ -232,8 +225,11 @@ class Handler {
             this.oldHash = Hash(this.graph);
         }
 
-        document.getElementById('zoom').textContent = 
-            `${this.viewport.getZoomPercentage()}%`;
+        const zoom = this.viewport.getZoomPercentage();
+        if(zoom !== this.oldZoomValue) {
+            document.getElementById('zoom').textContent = `${zoom}%`;
+            this.oldZoomValue = zoom;
+        }
     
         if (document.hasFocus()) {
             this.drawWorld();

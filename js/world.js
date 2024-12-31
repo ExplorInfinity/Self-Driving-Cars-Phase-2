@@ -8,7 +8,7 @@ import { Stop } from "./markings/stop.js";
 import { Target } from "./markings/target.js";
 import { Yield } from "./markings/yield.js";
 import { Graph } from "./math/graph.js";
-import { add, getDistance, lerp, scale } from "./math/utils.js";
+import { add, getDistance, getNearestSegment, lerp, scale } from "./math/utils.js";
 import { Building } from "./objects/building.js";
 import { Tree } from "./objects/tree.js";
 import { Envelope } from "./primitives/envelope.js";
@@ -113,6 +113,9 @@ export class World {
         } else {
             const worker = new Worker('./js/workers/genRoads.js', {type: 'module'});
             const { roads, roadBorders } = await new Promise((resolve, reject) => {
+                LoadingScreen.show();
+                LoadingScreen.showProgressBar();
+
                 worker.onmessage = e => {
                     const data = e.data;
                     if(data.result) {
@@ -120,9 +123,9 @@ export class World {
                         worker.terminate();
                         resolve(data.result);
                     } else if(data.comment) {
-                        LoadingScreen.show();
-                        LoadingScreen.showRandomBar();
                         LoadingScreen.setComment(data.comment);
+                    } else if(data.value && data.max) {                        
+                        LoadingScreen.updateProgressBar(data.value, data.max);
                     }
                 }
 
@@ -183,7 +186,7 @@ export class World {
         ).forEach(item => item.draw(context, viewPoint));
     }
 
-    async generateCorridors(start, end) {
+    async generateCorridors(start, end) {        
         // console.time('Corridor');
         const worker = new Worker(`${location.origin}/js/workers/genCorridors.js`, {type: 'module'});
         
@@ -196,6 +199,9 @@ export class World {
                     const result = 
                         data.result.map(segInfo => Segment.loadSegment(segInfo));
                     resolve(result);
+                } else if(data.abort) {
+                    worker.terminate();
+                    resolve(this.corridor);
                 }
             }
 

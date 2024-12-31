@@ -176,10 +176,30 @@ export function intersectionPossible(polygonA, polygonB) {
 }
 
 export function getBoundaryByPoints(points) {
-    const left = Math.min(...points.map(p => p.x));
-    const right = Math.max(...points.map(p => p.x));
-    const top = Math.min(...points.map(p => p.y));
-    const bottom = Math.max(...points.map(p => p.y));
+    // For a big map, best: 550ms, average: 600ms
+    let left = Number.MAX_SAFE_INTEGER;
+    let right = Number.MIN_SAFE_INTEGER;
+    let top = Number.MAX_SAFE_INTEGER;
+    let bottom = Number.MIN_SAFE_INTEGER;
+    for(let i = 0; i < points.length; i++) {
+        const point = points[i];
+        if(left > point.x) left = point.x;
+        else if(right < point.x) right = point.x;
+        if(top > point.y) top = point.y;
+        else if(bottom < point.y) bottom = point.y;
+    }
 
     return { top, right, left, bottom }
+
+    // For a big map, 8.5s
+    // const left = Math.min(...points.map(p => p.x));
+    // const right = Math.max(...points.map(p => p.x));
+    // const top = Math.min(...points.map(p => p.y));
+    // const bottom = Math.max(...points.map(p => p.y));
+
+    // For a big map, 4.5s
+    // const left = points.map(p => p.x).reduce((min, current) => min > current ? current : min);
+    // const right = points.map(p => p.x).reduce((max, current) => max < current ? current : max);
+    // const top = points.map(p => p.y).reduce((min, current) => min > current ? current : min);
+    // const bottom = points.map(p => p.y).reduce((max, current) => max < current ? current : max);
 }

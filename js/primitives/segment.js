@@ -85,6 +85,22 @@ export class Segment {
         return getDistance(projection.point, point);
     }
 
+    closestPointOnSeg(point) {
+        if(getDistance(this.p1, this.p2) < 0.001) {
+            return this.p1
+        }
+        
+        const projection = this.projectionVec(point);
+        if(projection.offset >= 1 || projection.offset <= 0) {
+            const distP1 = getDistance(point, this.p1);
+            const distP2 = getDistance(point, this.p2);
+
+            return distP1 < distP2 ? this.p1 : this.p2
+        }
+
+        return projection.point
+    }
+
     projectionVec(point) {
         const A = subtract(point, this.p1);
         const B = subtract(this.p2, this.p1);

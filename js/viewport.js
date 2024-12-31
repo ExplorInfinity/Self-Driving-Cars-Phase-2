@@ -70,6 +70,8 @@ export class Viewport {
     }
     
     #handleMouseMove(e) {
+        this.mouse.x = e.x;
+        this.mouse.y = e.y;
         if( this.keys.includes('Control') && 
             this.drag.active) this.handleDrag(e);
         else if(this.drag.active) this.endDrag(e); 

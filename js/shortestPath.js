@@ -1,11 +1,10 @@
 import { Point } from "./primitives/point.js";
 import { Segment } from "./primitives/segment.js";
 
-export function getShortestPath(startPoint, endPoint, graph, timeout=2000) {
+export function getShortestPath(startPoint, endPoint, segments, timeout=2000) {
     if(startPoint === endPoint) return [startPoint];
     const time = Date.now();
-    const points = graph.points;
-    const segments = graph.segments;
+    const points = segments.map(seg => [seg.p1, seg.p2]).flat();
     
     addKeys(points);
     
@@ -40,7 +39,7 @@ export function getShortestPath(startPoint, endPoint, graph, timeout=2000) {
         
         currentPoint = points.reduce((nearest, point) => {
             return (((point.dist < nearest.dist) && !point.visited) ? point : nearest)
-        }, points.find(p => !p.visited));                
+        }, points.find(p => !p.visited));
     }
 
     if(!endPoint.prev) {
