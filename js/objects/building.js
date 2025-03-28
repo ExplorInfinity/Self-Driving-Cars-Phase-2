@@ -26,7 +26,7 @@ export class Building {
     #getFake3dPoint(point, viewPoint, height) {
         const dir = normalize(subtract(point, viewPoint));
         const dist = getDistance(point, viewPoint);
-        const scaler = Math.atan(dist / 1000) / (Math.PI / 2);
+        const scaler = Math.atan(dist / 5000) / (Math.PI / 2);
         return add(point, scale(dir, height * scaler));
     }
 

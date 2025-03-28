@@ -3,13 +3,13 @@ import { Point } from "./primitives/point.js";
 import { Segment } from "./primitives/segment.js";
 
 export class Viewport {
-    constructor(context, { zoom=1, fastZoom=false, zoomDrag=false }={}) {
+    constructor(context, { minZoom=0.1, maxZoom=10, zoom=1, fastZoom=false, zoomDrag=false }={}) {
         this.canvas = context.canvas;
         this.context = context;
 
         this.zoom = zoom;
-        this.minZoom = 0.1;
-        this.maxZoom = 10;
+        this.minZoom = minZoom;
+        this.maxZoom = maxZoom;
         this.step = 0.15;
         this.fastZoom = fastZoom;
 

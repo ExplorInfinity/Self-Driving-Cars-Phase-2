@@ -7,7 +7,7 @@ const minimapCtx = minimapCanvas.getContext('2d');
 minimapCanvas.width = 300;
 minimapCanvas.height = 200;
 
-const viewport = new Viewport(minimapCtx, { zoom: 5, zoomDrag: true, fastZoom: true });
+const viewport = new Viewport(minimapCtx, { zoom: 5, maxZoom: 100, zoomDrag: true, fastZoom: true });
 
 DragEvent.addDragAndDrop(minimapCanvas, '🗾', { hideOnOffscreen: true });
 
