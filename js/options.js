@@ -28,10 +28,11 @@ const generateBtn = document.getElementById('generate');
 const genRoads = document.getElementById('genRoads');
 const genBuildings = document.getElementById('genBuildings');
 const genTrees = document.getElementById('genTrees');
+const debugBtn = document.getElementById('debugBtn');
 const backBtn = document.getElementById('back');
 const zoom = document.getElementById('zoom');
 
-const mainPanelBtns = [save, restore, openOsmBtn, show, dispose, clear, mode, generateBtn];
+const mainPanelBtns = [save, restore, openOsmBtn, show, dispose, clear, mode, generateBtn, debugBtn];
 const savePanelBtns = [saveLocal, saveFile];
 const restorePanelBtns = [restoreLocal, fileInput];
 const clearPanelBtns = [clearAll, clearBuildings, clearRoads, clearTrees];
@@ -79,7 +80,7 @@ export function checkData(handler) {
     try {
         handler.loadOSM(JSON.parse(value));
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 
     osmData.value = '';

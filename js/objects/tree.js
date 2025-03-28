@@ -5,7 +5,7 @@ import { Polygon } from "../primitives/polygon.js";
 import { LoadingScreen } from "../loading.js";
 
 export class Tree {
-    constructor(center, size, heightCoeff=0.17, {protoType=false, levels, base}={}) {
+    constructor(center, size, heightCoeff=0.17, {levels, base}={}) {
         this.center = center;
         this.size = size;
         this.heightCoeff = heightCoeff;

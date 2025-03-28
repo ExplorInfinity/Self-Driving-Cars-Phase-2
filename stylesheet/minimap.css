@@ -1,0 +1,7 @@
+#minimap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: hsl(0, 0%, 30%);
+    z-index: 1;
+}

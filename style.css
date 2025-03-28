@@ -141,20 +141,6 @@ input[type='file'] {
     padding: 5px
 }
 
-#zoom {
-    width: 60px;
-    min-width: 60px;
-    height: 50px;
-    border: 2px solid hsl(0, 0%, 30%);
-    background-color: hsl(0, 0%, 10%);
-    color: white;
-    text-align: center;
-    padding: 15px 0;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 17px;
-    font-weight: bold;
-}
-
 #osmPanel {
     position: absolute;
     top: 50%;
@@ -250,4 +236,166 @@ input[type='file'] {
     border: 2px solid hsl(0, 0%, 30%);
     margin-right: 20px;
     font-size: 20px;
+}
+
+#debugger {
+    background-color: hsl(0, 0%, 10%);
+    color: white;
+    min-width: 300px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    padding: 10px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    cursor: grab;
+    max-height: 500px;
+    overflow-y: scroll;
+    scrollbar-width: none;
+}
+
+#debugger label {
+    background-color: hsl(0, 0%, 10%);
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 5px 25px;
+    padding: 17px 10px;
+    border: none;
+    width: 90%;
+    font-size: 1.25em;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+#debugger label:hover {
+    background-color: hsl(0, 0%, 15%);
+}
+
+#debugger input[type="color"] {
+    margin: 0 5px;
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    right: 5%;
+}
+
+.debugContainer {
+    border: 2px solid whitesmoke;
+    margin: 10px;
+    position: relative;
+    padding: 10px 0;
+}
+
+.debugLabel {
+    position: absolute;
+    top: 0;
+    z-index: 1;
+    translate: 0 -50%;
+    left: 5%;
+    background-color: hsl(0, 0%, 15%);
+    padding: 0 5px;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#osmSelection {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    background-color: hsl(0, 0%, 10%);
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border-radius: 3px;
+    border: 2px solid whitesmoke;
+}
+
+.overlay{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    background-color: rgba(0, 0, 0, 0.4);
+    width: 100%;
+    height: 100%;
+}
+
+.osmBtn {
+    background-color: hsl(125, 70%, 30%);
+    color: white;
+    border: none;
+    border-radius: 2px;
+}
+
+.osmBtn:hover {
+    background-color: hsl(125, 70%, 25%);
+}
+
+.osmBtn:active {
+    background-color: hsl(125, 70%, 30%);
+}
+
+#viewport {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    /* transform: translateX(-50%); */
+    background-color: hsl(0, 0%, 10%);
+    width: max-content;
+    padding: 5px;
+    border-radius: 10px;
+    border: 1px solid hsl(0, 0%, 30%);
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+#viewport::before {
+    content: "⁞⁞";
+    font-size: 25px;
+    float: left;
+    padding-top: 5%;
+    color: hsl(0, 0%, 80%);
+}
+
+#viewport::after {
+    content: "⁞⁞";
+    font-size: 25px;
+    float: right;
+    padding-top: 5%;
+    color: hsl(0, 0%, 80%);
+}
+
+.viewport-display {
+    /* width: 60px; */
+    min-width: 60px;
+    height: 50px;
+    border: 2px solid hsl(0, 0%, 30%);
+    background-color: hsl(0, 0%, 10%);
+    text-align: center;
+    padding: 15px 0;
+    font-size: 17px;
+    font-weight: bold;
+    margin: 0 5px;
+    padding: 15px 5px;
+}
+
+.viewportLabel {
+    width: max-content;
+    display: inline-block;
+}
+
+.vr {
+    display: inline-block;
+}
+.vr::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    translate: 0 -50%;
+    background-color: hsl(0, 0%, 30%);
+    height: 80%;  
+    width: 2px;
 }

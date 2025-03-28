@@ -1,7 +1,7 @@
 import { Point } from "./primitives/point.js";
 import { Segment } from "./primitives/segment.js";
 
-export function getShortestPath(startPoint, endPoint, segments,{timeout=2000}={}) {
+export function getShortestPath(startPoint, endPoint, segments, {timeout=2000}={}) {
     if(startPoint === endPoint) return [startPoint];
     const points = segments.map(seg => [seg.p1, seg.p2]).flat();
     addKeys(points);

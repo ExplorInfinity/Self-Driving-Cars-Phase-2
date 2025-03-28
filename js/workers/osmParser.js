@@ -1,33 +1,41 @@
 import { Segment } from "../primitives/segment.js";
-import { invLerp, degToRad } from "../math/utils.js";
+import { invLerp, degToRad, getMin, getMax, getPointFromGeoCoords, getBoundingBox } from "../math/utils.js";
 import { Point } from "../primitives/point.js";
+import { Building } from "../objects/building.js";
+import { Polygon } from "../primitives/polygon.js";
 
+const Earth_Circumference = 400000000; //dm
 
 onmessage = e => {
+    
     const data = e.data;
-    const nodes = data.elements.filter(n => n.type === 'node');
-
-    const lats = nodes.map(node => node.lat);
-    const lons = nodes.map(node => node.lon);
-
-    const minLat = Math.min(...lats);
-    const maxLat = Math.max(...lats);
-    const minLon = Math.min(...lons);
-    const maxLon = Math.max(...lons);
-
+    const nodes = data.nodes;
+    const buildings = data.buildings;
+    
+    const lats = nodes.length > 0 ? 
+        nodes.map(node => node.lat) : 
+        buildings.map(b => b.geometry.map(c => c.lat)).flat();
+    const lons = nodes.length > 0 ? 
+        nodes.map(node => node.lon) : 
+        buildings.map(b => b.geometry.map(c => c.lon)).flat();
+    
+    const minLat = getMin(lats);
+    const maxLat = getMax(lats);
+    const minLon = getMin(lons);
+    const maxLon = getMax(lons);
+    
     const deltaLon = maxLon - minLon;
     const deltaLat = maxLat - minLat;
     const mapAspectRatio = deltaLon / deltaLat;
-    const height = deltaLat * 111000 * 10; // One degree lat is equal to 111km, scaling to 1px to 10m
+    const height = deltaLat * 111000 * 10; // One degree lat is equal to 111km, scaling to 1px to 10dm
     const width = height * mapAspectRatio;
+    const mapBoundingBox = {minLat, maxLat, minLon, maxLon, height, width};
 
     postMessage({comment: 'Parsing Nodes...'});
     const points = [];
     for(let i = 0; i < nodes.length; i++) {
         const node = nodes[i];
-        const y = invLerp(maxLat, minLat, node.lat) * height;
-        const x = invLerp(minLon, maxLon, node.lon) * width * Math.cos(degToRad(node.lat));
-        const point = new Point(x, y);
+        const point = getPointFromGeoCoords(mapBoundingBox, node);
         point.id = node.id;
         points.push(point);
 
@@ -35,7 +43,7 @@ onmessage = e => {
     }
 
     postMessage({comment: 'Parsing Ways...'});
-    const ways = data.elements.filter(element => element.type === 'way');
+    const ways = data.ways;
     const segments = [];
     for(let j = 0; j < ways.length; j++) {
         const way = ways[j];
@@ -49,5 +57,23 @@ onmessage = e => {
         postMessage({value: j+1, max: ways.length});
     }
 
-    postMessage({ result: { points, segments } });
+    postMessage({comment: 'Parsing Buildings...'});
+    const parsedBuildings = [];
+    for(let j = 0; j < buildings.length; j++) {
+        const geometryPoints = [];
+        for(const node of buildings[j].geometry) {
+            geometryPoints.push(
+                getPointFromGeoCoords(mapBoundingBox, node));
+        }
+        parsedBuildings.push(
+            new Building(
+                new Polygon(geometryPoints), 
+                { levelCount: Number(buildings[j].tags['building:levels'] ?? 1) }
+            )
+        );        
+        
+        postMessage({value: j+1, max: ways.length});
+    }
+
+    postMessage({ result: { points, segments, buildings: parsedBuildings } });
 }

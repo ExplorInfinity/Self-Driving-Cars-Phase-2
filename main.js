@@ -1,7 +1,7 @@
 import { GraphEditor } from "./js/editors/graphEditor.js";
 import { MarkingEditor } from "./js/editors/markingEditor.js";
 import { Graph } from "./js/math/graph.js";
-import { average, Hash, scale } from "./js/math/utils.js";
+import { average, getMax, getMin, Hash, scale } from "./js/math/utils.js";
 import { Viewport } from "./js/viewport.js";
 import { World } from "./js/world.js";
 import { Point } from "./js/primitives/point.js";
@@ -13,6 +13,10 @@ import { LoadingScreen } from "./js/loading.js";
 import { getShortestPath } from "./js/shortestPath.js";
 import { Segment } from "./js/primitives/segment.js";
 import { Envelope } from "./js/primitives/envelope.js";
+import { Debugger } from "./js/debugger.js";
+import * as OSM_Checkbox from './js/components/osmCheckbox.js';
+import * as Minimap from './js/minimap.js';
+import DragEvent from "./js/library/drag.js";
 
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
@@ -23,14 +27,26 @@ class Handler {
     constructor(canvas, context) {
         this.canvas = canvas;
         this.context = context;
+        this.minimapCanvas = document.getElementById('minimap');
+        this.minimapContext = this.minimapCanvas.getContext('2d');
         this.selectionMenu = document.getElementById('markingPanel');
         this.pauseDrawn = false;
         this.lastTime = 0;
 
+        // Debug
+        this.drawCenterPoint = false;
+
         window.addEventListener('resize', () => {
             canvas.width = canvas.height = window.innerHeight - 165;
             this.pauseDrawn = false;
-        })
+        });
+
+        const viewportProps = document.getElementById('viewport');
+        DragEvent.addDragAndDrop(
+            viewportProps, '🔎', 
+            {   defaultBtnPos: { x: window.innerWidth*0.5, y: 0}, 
+                hideOnOffscreen: true   }
+        );
 
         this.#addEventListeners();
     }
@@ -60,7 +76,7 @@ class Handler {
             this.createNewWorld(world);
             e.target.value = '';
         }, {passive: true})
-        osmLoad.addEventListener('click', () => checkData(this));
+        document.getElementById('osmLoad').addEventListener('click', () => checkData(this));
         document.getElementById('genRoads').addEventListener('click', () => this.world.generate());
         document.getElementById('genBuildings').addEventListener('click', () => this.generateBuildings());
         document.getElementById('genTrees').addEventListener('click', () => this.generateTrees());
@@ -71,7 +87,7 @@ class Handler {
             if(keyPressed === 's') this.start = Point.loadPoint(this.viewport.mouse);
             if(keyPressed === 'e') this.end = Point.loadPoint(this.viewport.mouse);            
 
-            if(this.start && this.end) this.world.generateCorridors(this.start, this.end);
+            if(this.start && this.end) this.world.generateCorridors(this.start, this.end);            
         })
         window.addEventListener('keyup', e => {
             setTimeout(() => {
@@ -98,19 +114,46 @@ class Handler {
     }
 
     async loadOSM(data) {
-        const { points, segments } = await OSM.getWorldInfo(data);
+        const result = await this.promptSelection(data);        
+
+        const { points, segments, buildings } = await OSM.getWorldInfo(result);
+
+        if(points.length > 0) {
+            this.graph.points = points;
+            const left = getMin(points.map(p => p.x));
+            const right = getMax(points.map(p => p.x));
+            const top = getMin(points.map(p => p.y));
+            const bottom = getMax(points.map(p => p.y));
+    
+            const middlePoint = average({x: left, y: top}, {x: right, y: bottom});
+            this.viewport.offset = scale(middlePoint, -1);
+        }
+        if(segments.length > 0) this.graph.segments = segments;
         
-        this.graph.points = points;
-        this.graph.segments = segments;
-
-        const left = Math.min(...points.map(p => p.x));
-        const right = Math.max(...points.map(p => p.x));
-        const top = Math.min(...points.map(p => p.y));
-        const bottom = Math.max(...points.map(p => p.y));
-
-        const middlePoint = average({x: left, y: top}, {x: right, y: bottom});
-        this.viewport.offset = scale(middlePoint, -1);
         this.world.generate();
+        this.world.buildings = buildings;        
+    }
+
+    promptSelection(data) {
+        return new Promise((resolve, reject) => {
+            document.getElementById('osmForm').style.display = 'block';
+            const nodes = data.elements.filter(n => n.type === 'node');
+            const ways = data.elements.filter(element => element.type === 'way' && element.tags.highway);
+            const buildings = data.elements.filter(element => element.type === 'way' && element.tags.building);
+            
+            OSM_Checkbox.setRoadLabel(`Roads [${nodes.length > 0 ? ways.length: 0}]`);
+            OSM_Checkbox.setBuildingLabel(`Buildings [${buildings.length}]`);
+            if(this.world.buildings.length > 0) alert('Alert: If you continue, buildings will be removed!');
+            
+            document.getElementById('osmGenerate').addEventListener('click', e => {
+                document.getElementById('osmForm').style.display = 'none';
+                const result = {};
+                result.ways = OSM_Checkbox.isRoadsChecked() ? ways : [];
+                result.nodes = OSM_Checkbox.isRoadsChecked() ? nodes : [];
+                result.buildings = OSM_Checkbox.isBuildingsChecked() ? buildings : [];                
+                resolve(result);
+            }, {once: true})
+        })
     }
     
     createNewWorld({world, viewport}={}) {
@@ -196,6 +239,9 @@ class Handler {
         this.world.draw(this.context, viewPoint);
         this.graphEditor.display();
         this.markingEditor.display(this.context);
+        if(this.drawCenterPoint) 
+            scale(this.viewport.offset, -1).draw(this.context, 
+            {size: 2 * this.viewport.zoom, color: 'hsl(0,0%,10%)'});
     }
 
     drawPause() {
@@ -215,6 +261,23 @@ class Handler {
         this.context.restore();
     }
 
+    displayViewportProps() {
+        const zoom = this.viewport.getZoomPercentage();
+        if(zoom !== this.oldZoomValue) {
+            document.getElementById('zoom').textContent = `${zoom}%`;
+            this.oldZoomValue = zoom;
+        }
+        
+        const offset = this.viewport.getOffset();
+        if(offset !== this.oldOffset) {
+            document.getElementById('viewportX').textContent = 
+                -(offset.x + this.canvas.width*0.5).toFixed(0);
+            document.getElementById('viewportY').textContent = 
+                (offset.y + this.canvas.height*0.5).toFixed(0);
+            this.oldOffset = this.viewport.offset;
+        }
+    }
+
     animate(timestamp) {
         const deltaTime = timestamp - this.lastTime;
         this.lastTime = timestamp;
@@ -224,14 +287,10 @@ class Handler {
             this.world.generate();
             this.oldHash = Hash(this.graph);
         }
-
-        const zoom = this.viewport.getZoomPercentage();
-        if(zoom !== this.oldZoomValue) {
-            document.getElementById('zoom').textContent = `${zoom}%`;
-            this.oldZoomValue = zoom;
-        }
     
+        this.displayViewportProps();
         if (document.hasFocus()) {
+            Minimap.drawMinimap(this.world);
             this.drawWorld();
             this.world.update(deltaTime);
             if(this.pauseDrawn) this.pauseDrawn = false;

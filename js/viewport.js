@@ -3,14 +3,15 @@ import { Point } from "./primitives/point.js";
 import { Segment } from "./primitives/segment.js";
 
 export class Viewport {
-    constructor(context) {
+    constructor(context, { zoom=1, fastZoom=false, zoomDrag=false }={}) {
         this.canvas = context.canvas;
         this.context = context;
 
-        this.zoom = 1;
-        this.minZoom = 0.5;
+        this.zoom = zoom;
+        this.minZoom = 0.1;
         this.maxZoom = 10;
         this.step = 0.15;
+        this.fastZoom = fastZoom;
 
         this.center = new Point(this.canvas.width*0.5, this.canvas.height*0.5);
         this.mouse = new Point(0, 0);
@@ -23,6 +24,7 @@ export class Viewport {
             offset: new Point(0, 0)
         }
         this.dragScale = 1;
+        this.zoomDrag = zoomDrag;
 
         this.keys = [];
         this.#addEventListeners();
@@ -60,7 +62,7 @@ export class Viewport {
         if(!this.keys.includes('Control')) return
 
         const direction = Math.sign(e.deltaY);
-        const value = this.zoom+direction*this.step*(this.keys.includes('Shift') ? 5 : 1);
+        const value = this.zoom + direction * this.step * ((this.fastZoom || this.keys.includes('Shift')) ? 5 : 1);
         this.zoom = Math.max(this.minZoom, Math.min(value, this.maxZoom));
     }
 
@@ -127,15 +129,12 @@ export class Viewport {
         this.mouse.x = x;
         this.mouse.y = y;
         this.drag.end = new Point(x, y);
-        this.drag.offset = scale(subtract(this.drag.end, this.drag.start), this.dragScale);
+        this.drag.offset = scale(subtract(this.drag.end, this.drag.start), 
+                                 this.zoomDrag ? this.zoom : this.dragScale);
     }
 
     endDrag(e) {
-        const {x, y} = {x: e.x, y: e.y};
-        this.mouse.x = x;
-        this.mouse.y = y;
-        this.drag.end = new Point(x, y);
-        this.drag.offset = scale(subtract(this.drag.end, this.drag.start), this.dragScale);
+        this.handleDrag(e);
         this.offset = add(this.offset, this.drag.offset);            
 
         this.drag = {
@@ -148,17 +147,16 @@ export class Viewport {
 
     reset() {
         // this.context.restore();
-    
+        
         this.context.clearRect(0, 0, canvas.width, canvas.height);
         this.context.save();
         
         // Zoom
         this.context.translate(this.center.x, this.center.y);
         this.context.scale(1 / this.zoom, 1 / this.zoom);
-    
+        
         // Offset Translation
         const offset = this.getOffset();
         this.context.translate(offset.x, offset.y);
     }
-
 }

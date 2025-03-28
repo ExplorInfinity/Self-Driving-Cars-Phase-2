@@ -153,8 +153,8 @@ export function createWorkerChunk(index, workerCount, array) {
 }
 
 export function intersectionPossible(polygonA, polygonB) {
-    const A = getBoundaryByPoints(polygonA.points);
-    const B = getBoundaryByPoints(polygonB.points);
+    const A = getBoundingBox(polygonA.points);
+    const B = getBoundingBox(polygonB.points);
 
     const verticalOverlap = (
         (A.top <= B.top && B.top <= A.bottom) || 
@@ -175,7 +175,7 @@ export function intersectionPossible(polygonA, polygonB) {
     return false
 }
 
-export function getBoundaryByPoints(points) {
+export function getBoundingBox(points) {
     // For a big map, best: 550ms, average: 600ms
     let left = Number.MAX_SAFE_INTEGER;
     let right = Number.MIN_SAFE_INTEGER;
@@ -202,4 +202,44 @@ export function getBoundaryByPoints(points) {
     // const right = points.map(p => p.x).reduce((max, current) => max < current ? current : max);
     // const top = points.map(p => p.y).reduce((min, current) => min > current ? current : min);
     // const bottom = points.map(p => p.y).reduce((max, current) => max < current ? current : max);
+}
+
+export function getMin(numbers) {
+    if(numbers.length <= 0) return null;
+    
+    let lowest = Number.MAX_SAFE_INTEGER;
+    for(const number of numbers) {
+        if(lowest > number) lowest = number;
+    }
+    return lowest
+}
+
+export function getMax(numbers) {
+    if(numbers.length <= 0) return null;
+    
+    let highest = Number.MIN_SAFE_INTEGER;
+    for(const number of numbers) {
+        if(highest < number) highest = number;
+    }
+    return highest
+}
+
+export function getPointFromGeoCoords(boundingBox, node) {
+    const {minLat, maxLat, minLon, maxLon, width, height} = boundingBox;
+    const {lat, lon} = node;
+    
+    const y = 
+        invLerp(maxLat, minLat, lat) * height;
+    const x = 
+        invLerp(minLon, maxLon, lon) * width * Math.cos(degToRad(lat));
+
+    return new Point(x, y)
+}
+
+export function trimSpaces(word) {
+    const wordArray = word.split('');
+    while(wordArray.includes(' ')) {
+        wordArray.splice(wordArray.indexOf(' '), 1);
+    }    
+    return wordArray.join('')
 }

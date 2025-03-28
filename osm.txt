@@ -22,3 +22,50 @@
 out body;
 >;
 out skel;
+
+// Buildings
+[out:json][timeout:25];
+(
+  way["building"]
+   ['building' !~ 'yes']
+   ['building' !~ 'shed']
+   ['building' !~ 'service']
+   ['building' !~ 'roof']
+   ['building' !~ 'parking']
+   ['building' !~ 'carport']
+   ['building' !~ 'detached']
+   ['building' !~ 'bridge']
+   ['building' !~ 'garages']
+   ['building' !~ 'construction']
+   ['amenity' !~ 'bicycle_parking']
+   ['amenity' !~ 'toilets']
+  ({{bbox}});
+  relation["building"]({{bbox}});
+);
+out geom;
+
+// Parking Spaces
+[out:json][timeout:25];
+nwr["amenity"="parking"]({{bbox}});
+out geom;
+
+// Parks
+[out:json][timeout:25];
+nwr["leisure"="park"]({{bbox}});
+out geom;
+
+// Water Bodies(Natural)
+[out:json][timeout:25];
+(
+  way["natural"="water"]({{bbox}});
+  relation["natural"="water"]({{bbox}});
+);
+out geom;
+
+// Bridges
+[out:json][timeout:25];
+(
+  way["bridge"]({{bbox}});
+  relation["bridge"]({{bbox}});
+);
+out geom;

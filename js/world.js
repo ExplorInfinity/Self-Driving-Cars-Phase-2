@@ -1,3 +1,4 @@
+import { Debugger, DebuggerHandler } from "./debugger.js";
 import { LoadingScreen } from "./loading.js";
 import { Crossing } from "./markings/crossing.js";
 import { TrafficLights } from "./markings/lights.js";
@@ -8,7 +9,7 @@ import { Stop } from "./markings/stop.js";
 import { Target } from "./markings/target.js";
 import { Yield } from "./markings/yield.js";
 import { Graph } from "./math/graph.js";
-import { add, getDistance, getNearestSegment, lerp, scale } from "./math/utils.js";
+import { add, getDistance, getNearestSegment, lerp, scale, trimSpaces } from "./math/utils.js";
 import { Building } from "./objects/building.js";
 import { Tree } from "./objects/tree.js";
 import { Envelope } from "./primitives/envelope.js";
@@ -36,12 +37,21 @@ export class World {
         this.treeSize = treeSize;
 
         this.autoGenLimit = 50;
+        this.roadColor = '#bbbbbb';
 
         this.roads = roads ?? [];
         this.roadBorders = roadBorders ?? [];
         this.buildings = buildings ?? [];
         this.trees = trees ?? [];
         this.roadMarkings = roadMarkings ?? [];
+        this.debugger = new DebuggerHandler(this);
+
+        const debuggerClasses = [
+            {label: 'Buildings', object: this, arrayName: 'buildings', props: Building.debug}, 
+            {label: 'Roads', object: this, props: World.debug}, 
+        ]
+
+        this.debugger.addDebuggerClasses(debuggerClasses);
     }
 
     clearWorld() {
@@ -51,6 +61,10 @@ export class World {
         this.trees = [];
         this.roadMarkings = [];
     }
+
+    static debug = [
+        {label: 'Road Color', varName: 'roadColor', default: '#bbbbbb'}, 
+    ]
 
     static loadWorld(worldInfo) {
         const { points, segments, graph } = Graph.covertInfoToGraph(worldInfo.graph);        
@@ -163,8 +177,8 @@ export class World {
         this.roadMarkings.forEach(marking => marking.update(deltaTime));
     }
 
-    draw(context, viewPoint, {renderDistance=1000}={}) {
-        this.roads.forEach(road => road.draw(context, {fillStyle: '#BBB', strokeStyle: '#BBB', lineWidth: this.roadWidth*0.25}));
+    draw(context, viewPoint, {renderDistance=10000}={}) {
+        this.roads.forEach(road => road.draw(context, {fillStyle: this.roadColor, strokeStyle: this.roadColor, lineWidth: this.roadWidth*0.25}));
         this.roadBorders.forEach(intersection => intersection.draw(context, {color: 'white', lineWidth: this.roadWidth*0.0625}));        
         for(const segment of this.graph.segments) {
             segment.draw(context, {color: 'white', dash: [10, 10], lineWidth: this.roadWidth*0.05});
@@ -176,14 +190,14 @@ export class World {
                 item.draw(context);
             }
         }
-        
+                
         const items = [...this.buildings??[], ...this.trees]
         .filter(item => item.base.minDistFromPoint(viewPoint) <= renderDistance)
         .sort(
             (a, b) => 
                 b.base.minDistFromPoint(viewPoint) -
                 a.base.minDistFromPoint(viewPoint)
-        ).forEach(item => item.draw(context, viewPoint));
+        ).forEach(item => item.draw(context, viewPoint));        
     }
 
     async generateCorridors(start, end) {        

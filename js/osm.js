@@ -1,15 +1,16 @@
 import { LoadingScreen } from "./loading.js";
-import { degToRad, invLerp } from "./math/utils.js";
+import { Building } from "./objects/building.js";
 import { Point } from "./primitives/point.js";
 import { Segment } from "./primitives/segment.js";
 
 export class OSM {
     static async getWorldInfo(data) {
-        const {points, segments} = await this.parseData(data);
+        const {points, segments, buildings} = await this.parseData(data);
         
         return {
             points: points.map(pointInfo => Point.loadPoint(pointInfo)), 
-            segments: segments.map(segInfo => Segment.loadSegment(segInfo))
+            segments: segments.map(segInfo => Segment.loadSegment(segInfo)), 
+            buildings: buildings.map(buildingInfo => Building.loadBuilding(buildingInfo))
         }
     }
 
@@ -38,6 +39,7 @@ export class OSM {
             worker.onerror = e => {
                 console.error(e);
                 worker.terminate();
+                reject();
             }
     
             worker.postMessage(data);

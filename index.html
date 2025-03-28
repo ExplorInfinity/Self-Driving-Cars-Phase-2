@@ -5,8 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Self-Driving Cars Phase-2</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="stylesheet/slider-button.css">
+    <link rel="stylesheet" href="stylesheet/osmCheckbox.css">
+    <link rel="stylesheet" href="stylesheet/minimap.css">
+    <link rel="stylesheet" href="stylesheet/popup-open-Btn.css">
 </head>
 <body>
+    <canvas id="minimap"></canvas>
+
+    <div id="debugger" style="display: none;">
+        <div id="nothingScreen" class="debugContainer" style="font-family: Arial;">
+            Empty
+        </div>
+    </div>
 
     <div id="loadingScreen" style="display: none;">
         <label id="loadingLabel" for="progressBar">
@@ -23,6 +34,19 @@
         <canvas id="canvas"></canvas>
     </div>
 
+    <div id="viewport">
+        <div class="viewportLabel">
+            <div id="viewportX" class="viewport-display"></div>
+        </div>
+        <div class="viewportLabel">
+            <div id="viewportY" class="viewport-display"></div>
+        </div>
+        <div class="vr"></div>
+        <div class="viewportLabel">
+            <div id="zoom" class="viewport-display"></div>
+        </div>
+    </div>
+
     <div id="controls">
         <div id="panelLabel">🛠️</div>
         <div id="panelOne" class="btn-panel"></div>
@@ -37,7 +61,6 @@
         <div id="panelTwo" class="btn-panel">
             <button id="back" style="display: none;">X</button>
         </div>
-        <div id="zoom"></div>
     </div>
 
     <div id="osmPanel" style="display: none;">
@@ -55,6 +78,12 @@
                 <div class="tooltipText">Go Back</div>
                 <button id="osmBack" class="toolBtn">❌</button>
             </div>
+        </div>
+    </div>
+    
+    <div id="osmForm" class="overlay" style="display: none;">
+        <div id="osmSelection">
+            <button id="osmGenerate" class="osmBtn">Generate</button>
         </div>
     </div>
 
@@ -126,6 +155,7 @@
         const buttonList2 = [
             {tooltip_text: 'Graph Mode', btn_id: 'mode', btn_label: '🌐', mode: 'graph', tooltipText_id: 'modeTip'},
             {tooltip_text: 'World Generation', btn_id: 'generate', btn_label: '⚙️'},
+            {tooltip_text: 'Debug Panel', btn_id: 'debugBtn', btn_label: '🪲'},
         ];
 
         const markingPanel = document.getElementById('markingPanel');
@@ -136,6 +166,7 @@
         appendButtons(panelOne, buttonList1);
         appendButtons(panelTwo, buttonList2);
     </script>
+    <script type="module" src="js/debugger.js"></script>
     <script type="module" src="js/options.js"></script>
     <script type="module" src="main.js"></script>
 </body>
