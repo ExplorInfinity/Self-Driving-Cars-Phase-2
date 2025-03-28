@@ -175,8 +175,19 @@ export default class DragEvent {
         // Keyboard Constraits
         let keypressed = false;
         if(!runsWhileKeyPressed) {
-            window.addEventListener('keydown', () => keypressed = true);
-            window.addEventListener('keyup', () => keypressed = false);
+            const keys = new Set();
+            window.addEventListener('keydown', e => {
+                const { key } = e;
+                keys.add(key);
+                keypressed = true;
+            });
+            window.addEventListener('keyup', e => {
+                const { key } = e;
+                keys.delete(key);
+                if(keys.size == 0) {
+                    keypressed = false;
+                }
+            });
         }
     }
 }
