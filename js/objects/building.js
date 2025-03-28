@@ -31,7 +31,7 @@ export class Building {
     }
 
     draw(context, viewPoint) {
-        const maxHeight = this.base.points.length > 4 ? this.maxHeight : this.maxHeight*0.6;
+        const maxHeight = this.base.points.length > 4 ? this.maxHeight : this.maxHeight*0.8;
 
         // Ceiling [part under roof]
         const topPoints = this.base.points.map(point => 
